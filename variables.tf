@@ -202,10 +202,10 @@ variable "ip_restrictions" {
     service_tag               = optional(string)
     virtual_network_subnet_id = optional(string)
     headers = optional(object({
-      x_azure_fdid      = optional(string)
-      x_fd_health_probe = optional(string)
-      x_forwarded_for   = optional(string)
-      x_forwarded_host  = optional(string)
+      x_azure_fdid_reference      = optional(string)
+      x_fd_health_probe_reference = optional(string)
+      x_forwarded_for_reference   = optional(string)
+      x_forwarded_host_reference  = optional(string)
     }))
   }))
   default     = []
@@ -221,14 +221,26 @@ variable "scm_ip_restrictions" {
     service_tag               = optional(string)
     virtual_network_subnet_id = optional(string)
     headers = optional(object({
-      x_azure_fdid      = optional(string)
-      x_fd_health_probe = optional(string)
-      x_forwarded_for   = optional(string)
-      x_forwarded_host  = optional(string)
+      x_azure_fdid_reference      = optional(string)
+      x_fd_health_probe_reference = optional(string)
+      x_forwarded_for_reference   = optional(string)
+      x_forwarded_host_reference  = optional(string)
     }))
   }))
   default     = []
-  description = "IP restrictions for the app"
+  description = "SCM IP restrictions for the app"
+}
+
+variable "headers" {
+  type = map(object({
+    x_azure_fdid      = optional(string)
+    x_fd_health_probe = optional(string)
+    x_forwarded_for   = optional(string)
+    x_forwarded_host  = optional(string)
+  }))
+  default     = {}
+  sensitive   = true
+  description = "Headers to use for IP restrictions"
 }
 
 variable "cors" {
@@ -335,7 +347,7 @@ variable "auth_settings_v2" {
 variable "backup" {
   type = object({
     name                     = string
-    storage_account_url      = string
+    sas_reference            = string
     enabled                  = optional(bool, true)
     frequency_interval       = number
     frequency_unit           = string
@@ -343,19 +355,31 @@ variable "backup" {
     retention_period_days    = number
   })
   default     = null
-  sensitive   = true
   description = "Backup settings"
+}
+
+variable "sas_urls" {
+  type        = map(string)
+  default     = {}
+  sensitive   = true
+  description = "Storage Account SAS urls"
 }
 
 variable "connection_strings" {
   type = list(object({
-    name  = string
-    type  = string
-    value = string
+    name            = string
+    type            = string
+    value_reference = string
   }))
   default     = []
-  sensitive   = true
   description = "Connection strings for the app"
+}
+
+variable "connection_string_values" {
+  type        = map(string)
+  default     = {}
+  sensitive   = true
+  description = "Connection string values for the app"
 }
 
 variable "logs" {
@@ -367,13 +391,13 @@ variable "logs" {
       azure_blob_storage = object({
         level             = optional(string, "Information")
         retention_in_days = optional(number, 365)
-        sas_url           = string
+        sas_url_reference = string
       })
     })
     http_logs = object({
       azure_blob_storage_http = object({
         retention_in_days = optional(number, 365)
-        sas_url           = string
+        sas_url_reference = string
       })
       file_system = object({
         retention_in_days = optional(number, 365)
@@ -382,20 +406,6 @@ variable "logs" {
     })
   })
   description = "Logging settings"
-}
-
-variable "storage_accounts" {
-  type = list(object({
-    name         = string
-    access_key   = string
-    account_name = string
-    share_name   = string
-    type         = string
-    mount_path   = optional(string)
-  }))
-  default     = []
-  sensitive   = true
-  description = "Storage accounts to mount"
 }
 
 variable "sticky_settings" {

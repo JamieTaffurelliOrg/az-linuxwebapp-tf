@@ -114,10 +114,10 @@ resource "azurerm_linux_web_app" "web_app" {
         dynamic "headers" {
           for_each = [ip_restriction.value["headers"]]
           content {
-            x_azure_fdid      = headers.value["x_azure_fdid"]
-            x_fd_health_probe = headers.value["x_fd_health_probe"]
-            x_forwarded_for   = headers.value["x_forwarded_for"]
-            x_forwarded_host  = headers.value["x_forwarded_host"]
+            x_azure_fdid      = var.headers[(headers.value["x_azure_fdid_reference"])].x_azure_fdid
+            x_fd_health_probe = var.headers[(headers.value["x_fd_health_probe_reference"])].x_fd_health_probe
+            x_forwarded_for   = var.headers[(headers.value["x_forwarded_for_reference"])].x_forwarded_for
+            x_forwarded_host  = var.headers[(headers.value["x_forwarded_host_reference"])].x_forwarded_host
           }
         }
       }
@@ -137,10 +137,10 @@ resource "azurerm_linux_web_app" "web_app" {
         dynamic "headers" {
           for_each = [scm_ip_restriction.value["headers"]]
           content {
-            x_azure_fdid      = headers.value["x_azure_fdid"]
-            x_fd_health_probe = headers.value["x_fd_health_probe"]
-            x_forwarded_for   = headers.value["x_forwarded_for"]
-            x_forwarded_host  = headers.value["x_forwarded_host"]
+            x_azure_fdid      = var.headers[(headers.value["x_azure_fdid_reference"])].x_azure_fdid
+            x_fd_health_probe = var.headers[(headers.value["x_fd_health_probe_reference"])].x_fd_health_probe
+            x_forwarded_for   = var.headers[(headers.value["x_forwarded_for_reference"])].x_forwarded_for
+            x_forwarded_host  = var.headers[(headers.value["x_forwarded_host_reference"])].x_forwarded_host
           }
         }
       }
@@ -301,7 +301,7 @@ resource "azurerm_linux_web_app" "web_app" {
 
     content {
       name                = backup.value["name"]
-      storage_account_url = backup.value["storage_account_url"]
+      storage_account_url = var.sas_urls[(backup.value["sas_reference"])]
       enabled             = backup.value["enabled"]
 
       schedule {
@@ -319,7 +319,7 @@ resource "azurerm_linux_web_app" "web_app" {
     content {
       name  = connection_string.key
       type  = connection_string.value["type"]
-      value = connection_string.value["value"]
+      value = var.connection_string_values[(connection_string.value["value_reference"])]
     }
   }
 
@@ -337,7 +337,7 @@ resource "azurerm_linux_web_app" "web_app" {
       azure_blob_storage {
         level             = var.logs.application_logs.azure_blob_storage.level
         retention_in_days = var.logs.application_logs.azure_blob_storage.retention_in_days
-        sas_url           = var.logs.application_logs.azure_blob_storage.sas_url
+        sas_url           = var.sas_urls[(var.logs.application_logs.azure_blob_storage.sas_url_reference)]
       }
     }
 
@@ -345,26 +345,13 @@ resource "azurerm_linux_web_app" "web_app" {
 
       azure_blob_storage {
         retention_in_days = var.logs.http_logs.azure_blob_storage_http.retention_in_days
-        sas_url           = var.logs.http_logs.azure_blob_storage_http.sas_url
+        sas_url           = var.sas_urls[(var.logs.http_logs.azure_blob_storage_http.sas_url_reference)]
       }
 
       file_system {
         retention_in_days = var.logs.http_logs.file_system.retention_in_days
         retention_in_mb   = var.logs.http_logs.file_system.retention_in_mb
       }
-    }
-  }
-
-  dynamic "storage_account" {
-    for_each = { for k in var.storage_accounts : k.name => k if k != null }
-
-    content {
-      name         = storage_account.key
-      access_key   = storage_account.value["access_key"]
-      account_name = storage_account.value["account_name"]
-      share_name   = storage_account.value["share_name"]
-      type         = storage_account.value["type"]
-      mount_path   = storage_account.value["mount_path"]
     }
   }
 

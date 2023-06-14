@@ -174,13 +174,13 @@ variable "auto_heal_setting" {
     requests = optional(list(object({
       count    = number
       interval = string
-    })))
+    })), [])
     slow_requests = optional(list(object({
       count      = number
       interval   = string
       time_taken = string
       path       = optional(string)
-    })))
+    })), [])
     status_codes = optional(list(object({
       count             = number
       interval          = string
@@ -188,7 +188,7 @@ variable "auto_heal_setting" {
       path              = optional(string)
       sub_status        = optional(number)
       win32_status      = optional(number)
-    })))
+    })), [])
   })
   description = "Auto heal settings"
 }
@@ -399,10 +399,6 @@ variable "logs" {
         retention_in_days = optional(number, 365)
         sas_url_reference = string
       })
-      file_system = object({
-        retention_in_days = optional(number, 365)
-        retention_in_mb   = number
-      })
     })
   })
   description = "Logging settings"
@@ -413,7 +409,7 @@ variable "sticky_settings" {
     app_setting_names       = optional(list(string))
     connection_string_names = optional(list(string))
   })
-  default     = {}
+  default     = null
   description = "Settings that dont change on slot swap"
 }
 

@@ -54,7 +54,7 @@ resource "azurerm_linux_web_app" "web_app" {
     }
 
     dynamic "auto_heal_setting" {
-      for_each = var.auto_heal_enabled ? [var.auto_heal_setting] : []
+      for_each = var.auto_heal_enabled != null ? [var.auto_heal_setting] : []
 
       content {
         action {
@@ -65,7 +65,7 @@ resource "azurerm_linux_web_app" "web_app" {
         trigger {
 
           dynamic "requests" {
-            for_each = [var.auto_heal_setting.requests]
+            for_each = var.auto_heal_setting.requests
 
             content {
               count    = requests.value["count"]
@@ -74,7 +74,7 @@ resource "azurerm_linux_web_app" "web_app" {
           }
 
           dynamic "slow_request" {
-            for_each = { for k in var.auto_heal_setting.slow_requests : k.path => k if k != null }
+            for_each = var.auto_heal_setting.slow_requests
 
             content {
               count      = slow_request.value["count"]
@@ -85,7 +85,7 @@ resource "azurerm_linux_web_app" "web_app" {
           }
 
           dynamic "status_code" {
-            for_each = { for k in var.auto_heal_setting.status_codes : "${k.path}-${k.status_code_range}-${k.sub_status}" => k if k != null }
+            for_each = var.auto_heal_setting.status_codes
 
             content {
               count             = status_code.value["count"]
@@ -147,7 +147,7 @@ resource "azurerm_linux_web_app" "web_app" {
     }
 
     dynamic "cors" {
-      for_each = var.cors ? [var.cors] : []
+      for_each = var.cors == null ? [] : [var.cors]
 
       content {
         allowed_origins     = cors.value["allowed_origins"]
@@ -157,7 +157,7 @@ resource "azurerm_linux_web_app" "web_app" {
   }
 
   dynamic "auth_settings_v2" {
-    for_each = var.auth_settings_v2 ? [var.auth_settings_v2] : []
+    for_each = var.auth_settings_v2 == null ? [] : [var.auth_settings_v2]
 
     content {
       auth_enabled                            = auth_settings_v2.value["auth_enabled"]
@@ -297,7 +297,7 @@ resource "azurerm_linux_web_app" "web_app" {
   }
 
   dynamic "backup" {
-    for_each = var.backup ? [var.backup] : []
+    for_each = var.backup == null ? [] : [var.backup]
 
     content {
       name                = backup.value["name"]
@@ -347,17 +347,16 @@ resource "azurerm_linux_web_app" "web_app" {
         retention_in_days = var.logs.http_logs.azure_blob_storage_http.retention_in_days
         sas_url           = var.sas_urls[(var.logs.http_logs.azure_blob_storage_http.sas_url_reference)]
       }
-
-      file_system {
-        retention_in_days = var.logs.http_logs.file_system.retention_in_days
-        retention_in_mb   = var.logs.http_logs.file_system.retention_in_mb
-      }
     }
   }
 
-  sticky_settings {
-    app_setting_names       = var.sticky_settings.app_setting_names
-    connection_string_names = var.sticky_settings.connection_string_names
+  dynamic "sticky_settings" {
+    for_each = var.sticky_settings == null ? [] : [var.sticky_settings]
+
+    content {
+      app_setting_names       = sticky_settings.value["app_setting_names"]
+      connection_string_names = sticky_settings.value["connection_string_names"]
+    }
   }
 
   tags = var.tags

@@ -11,6 +11,7 @@ resource "azurerm_linux_web_app" "web_app" {
   client_certificate_mode            = var.client_certificate_mode
   client_certificate_exclusion_paths = var.client_certificate_exclusion_paths
   https_only                         = var.https_only
+  public_network_access_enabled      = false
   zip_deploy_file                    = var.zip_deploy_file
   app_settings                       = var.app_settings
 

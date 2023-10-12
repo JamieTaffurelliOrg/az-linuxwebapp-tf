@@ -11,6 +11,7 @@ resource "azurerm_linux_web_app" "web_app" {
   client_certificate_mode            = var.client_certificate_mode
   client_certificate_exclusion_paths = var.client_certificate_exclusion_paths
   https_only                         = var.https_only
+  public_network_access_enabled      = false
   zip_deploy_file                    = var.zip_deploy_file
   app_settings                       = var.app_settings
 
@@ -40,8 +41,7 @@ resource "azurerm_linux_web_app" "web_app" {
     worker_count                                  = var.worker_count
 
     application_stack {
-      docker_image        = var.application_stack.docker_image
-      docker_image_tag    = var.application_stack.docker_image_tag
+      docker_image_name   = var.application_stack.docker_image
       dotnet_version      = var.application_stack.dotnet_version
       go_version          = var.application_stack.go_version
       java_server         = var.application_stack.java_server
